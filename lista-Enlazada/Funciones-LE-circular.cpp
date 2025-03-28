@@ -10,7 +10,7 @@ struct LE_Cir {
     Node* Head = nullptr;
 
     void Add(int Value) {
-        // Caso lista vacía
+        
         if (Head == nullptr) {
             Head = new Node(Value);
             Head->Next = Head;
@@ -21,14 +21,14 @@ struct LE_Cir {
         Node* prev = nullptr;
         bool inserted = false;
 
-        // Buscar posición de inserción
+        
         do {
-            if (current->Value == Value) return; // Evitar duplicados
+            if (current->Value == Value) return; 
             if (current->Value > Value) {
-                // Insertar aquí
+                
                 Node* newNode = new Node(Value, current);
                 if (prev == nullptr) {
-                    // Insertar al principio
+                    
                     Node* last = Head;
                     while (last->Next != Head) last = last->Next;
                     last->Next = newNode;
@@ -43,7 +43,7 @@ struct LE_Cir {
             current = current->Next;
         } while (current != Head);
 
-        // Insertar al final si no se insertó antes
+        
         if (!inserted) {
             Node* newNode = new Node(Value, Head);
             prev->Next = newNode;
@@ -57,7 +57,7 @@ struct LE_Cir {
         Node* prev = nullptr;
         bool found = false;
 
-        // Buscar nodo a eliminar
+        
         do {
             if (current->Value == Value) {
                 found = true;
@@ -69,14 +69,14 @@ struct LE_Cir {
 
         if (!found) return;
 
-        // Caso único nodo
+        
         if (current->Next == current) {
             delete current;
             Head = nullptr;
             return;
         }
 
-        // Eliminar nodo
+        
         if (current == Head) {
             Node* last = Head;
             while (last->Next != Head) last = last->Next;
@@ -120,10 +120,10 @@ int main() {
     lista.Add(1);
     lista.Add(2);
     lista.Add(5);
-    lista.Print(); // Debería imprimir: 1 2 3 5
+    lista.Print(); 
 
     lista.del(3);
-    lista.Print(); // Debería imprimir: 1 2 5
+    lista.Print(); 
 
     return 0;
 }
