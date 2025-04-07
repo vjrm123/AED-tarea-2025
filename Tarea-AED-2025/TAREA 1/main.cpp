@@ -98,11 +98,11 @@ MiVector crearVectorDesordenado(int tamaño) {
 }
 
 void imprimirResultados() {
-    vector<int> tamanios = { 500, 4000, 8000, 12000, 16000 };
+    vector<int> tamanios = { 5000, 8000, 12000, 15000, 20000 };
     const int pruebas = 5;
 
     cout << "RESULTADOS \n";
-    cout << "Tamanio\tDirecto\tFunciOn\tFunctor\tPolimorf.\n";
+    cout << "Tamanio\tDirecto\tFuncion\tFunctor\tPolimorf.\n";
     cout << "----------------------------------------\n";
 
     for (int tam : tamanios) {
