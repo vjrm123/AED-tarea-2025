@@ -38,9 +38,7 @@ void Vector<T>::Print(){
 template<class T>
 void Vector<T>::Resize(int NewCapacity){
     T* NewData = new T[NewCapacity];
-    for(int i = 0; i < size; ++i){
-        NewData[i] = data[i];
-    }
+    for(int i = 0; i < size; ++i){ NewData[i] = data[i]; }
     delete []data;
     data = NewData;
     Capacity = NewCapacity;
@@ -48,20 +46,14 @@ void Vector<T>::Resize(int NewCapacity){
 
 template<class T>
 void Vector<T>::Push_back(const T& Value){
-    if(size >= Capacity){
-        Resize(2*Capacity);
-    }
+    if(size >= Capacity){ Resize(2*Capacity); }
     data[size++] = Value;
 }
 
 template<class T>
 void Vector<T>::Push_front(const T& Value){
-    if(size >= Capacity){
-        Resize(2*Capacity);
-    }
-    for(int i = size; i > 0; --i){
-        data[i] = data[i-1];
-    }
+    if(size >= Capacity){ Resize(2*Capacity); }
+    for(int i = size; i > 0; --i){ data[i] = data[i-1]; }
     data[0] = Value;
     ++size;
 }
@@ -78,26 +70,18 @@ template<class T>
 void Vector<T>::Pop_front(){
     if(size == 0) return;
     data[0].~T();
-    for(int i=0; i < size-1; ++i){
-        data[i] = data[i+1];
-    }
+    for(int i=0; i < size-1; ++i){ data[i] = data[i+1]; }
     --size;
 }
 
 template<class T>
-T& Vector<T>::operator[](int index){
-    return data[index];
-}
+T& Vector<T>::operator[](int index){ return data[index]; }
 
 template<class T>
-const T& Vector<T>::operator[](int index) const {
-    return data[index];
-}
+const T& Vector<T>::operator[](int index) const { return data[index]; }
 
 template<class T>
-Vector<T>::~Vector(){
-    delete []data;
-}
+Vector<T>::~Vector(){ delete []data; }
 
 int main(){
     Vector<int> vec;
