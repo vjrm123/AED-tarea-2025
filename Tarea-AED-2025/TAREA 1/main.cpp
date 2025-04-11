@@ -6,152 +6,144 @@
 using namespace std;
 using namespace std::chrono;
 
-class MiVector {
+class V {
 private:
-    vector<int> datos;
-
+    vector<int> d;
 public:
-    void push_back(int valor) { datos.push_back(valor); }
-    int size() const { return datos.size(); }
-    int& operator[](int index) { return datos[index]; }
-    const int& operator[](int index) const { return datos[index]; }
+    void push_back(int v) { d.push_back(v); }
+    int size() const { return d.size(); }
+    int& operator[](int i) { return d[i]; }
+    const int& operator[](int i) const { return d[i]; }
 };
 
-void intercambiar(int& a, int& b) {
-    int temp = a;
-    a = b;
-    b = temp;
-}
-
-//  directo
-void bubbleSortDirecto(MiVector& vec) {
-    int n = vec.size();
+void directo(V& v) {
+    int n = v.size();
     for (int i = 0; i < n - 1; ++i) {
         for (int j = 0; j < n - i - 1; ++j) {
-            if (vec[j] > vec[j + 1]) {
-                intercambiar(vec[j], vec[j + 1]);
+            if (v[j] > v[j + 1]) {
+                int t = v[j];
+                v[j] = v[j + 1];
+                v[j + 1] = t;
             }
         }
     }
 }
 
-// puntero función 
-void bubbleSortFuncion(MiVector& vec, bool (*comparar)(int, int)) {
-    int n = vec.size();
+void funcion(V& v, bool (*cmp)(int, int)) {
+    int n = v.size();
     for (int i = 0; i < n - 1; ++i) {
         for (int j = 0; j < n - i - 1; ++j) {
-            if (comparar(vec[j], vec[j + 1])) {
-                intercambiar(vec[j], vec[j + 1]);
+            if (cmp(v[j], v[j + 1])) {
+                int t = v[j];
+                v[j] = v[j + 1];
+                v[j + 1] = t;
             }
         }
     }
 }
 
-bool ascendente(int a, int b) { return a > b; }
+bool c(int a, int b) { return (a % 10 + a) > (b % 10 + b); }
+bool asc(int a, int b) { return a > b; }
 
-//functor
-class BubbleSortFunctor {
+class F {
+private:
+    bool (*cmp)(int, int);
 public:
-    void operator()(MiVector& vec) {
-        int n = vec.size();
+    F(bool (*f)(int, int)) : cmp(f) {}
+    void operator()(V& v) {
+        int n = v.size();
         for (int i = 0; i < n - 1; ++i) {
             for (int j = 0; j < n - i - 1; ++j) {
-                if (vec[j] > vec[j + 1]) {
-                    intercambiar(vec[j], vec[j + 1]);
+                if (cmp(v[j], v[j + 1])) {
+                    int t = v[j];
+                    v[j] = v[j + 1];
+                    v[j + 1] = t;
                 }
             }
         }
     }
 };
 
-//polimorfismo
-class Ordenador {
+class O {
 public:
-    virtual void ordenar(MiVector& vec) = 0;
-    virtual ~Ordenador() {}
+    virtual void ord(V& v) = 0;
+    virtual ~O() {}
 };
 
-class BubbleSortPolimorfico : public Ordenador {
+class Polimorfismo : public O {
 public:
-    void ordenar(MiVector& vec) override {
-        int n = vec.size();
+    void ord(V& v) override {
+        int n = v.size();
         for (int i = 0; i < n - 1; ++i) {
             for (int j = 0; j < n - i - 1; ++j) {
-                if (vec[j] > vec[j + 1]) {
-                    intercambiar(vec[j], vec[j + 1]);
+                if (c(v[j], v[j + 1])) {
+                    int t = v[j];
+                    v[j] = v[j + 1];
+                    v[j + 1] = t;
                 }
             }
         }
     }
 };
 
-MiVector crearVectorDesordenado(int tamaño) {
-    MiVector vec;
-    random_device rd;
-    mt19937 gen(rd());
-    uniform_int_distribution<> dist(1, 1000);
-
-    for (int i = 0; i < tamaño; ++i) {
-        vec.push_back(dist(gen));
+V crear(int n) {
+    V v;
+    random_device r;
+    mt19937 g(r());
+    uniform_int_distribution<> d(1, 1000);
+    for (int i = 0; i < n; ++i) {
+        v.push_back(d(g));
     }
-    return vec;
+    return v;
 }
 
-void imprimirResultados() {
-    vector<int> tamanios = { 5000, 8000, 12000, 15000, 20000 };
-    const int pruebas = 5;
+void test() {
+    vector<int> tams = { 5000, 8000, 12000, 15000 };
+    const int rep = 3;
+    cout << "RESULTADOS\n";
+    cout << "Tam\tDirecto\tFuncion\tFunctor\tPolimorf.\n";
+    cout << "----------------------------------------------\n";
+    for (int t : tams) {
+        V ori = crear(t);
+        F f(asc);
+        Polimorfismo p;
+        double td = 0, tf = 0, tfu = 0, tp = 0;
+        for (int r = 0; r < rep; ++r) {
+            V c;
 
-    cout << "RESULTADOS \n";
-    cout << "Tamanio\tDirecto\tFuncion\tFunctor\tPolimorf.\n";
-    cout << "----------------------------------------\n";
-
-    for (int tam : tamanios) {
-        MiVector original = crearVectorDesordenado(tam);
-        BubbleSortFunctor functor;
-        BubbleSortPolimorfico polimorfico;
-
-        double t_directo = 0, t_funcion = 0, t_functor = 0, t_polimorfico = 0;
-
-        for (int p = 0; p < pruebas; ++p) {
-            MiVector copia = original;
-
-            //Directo
-            auto inicio = high_resolution_clock::now();
-            bubbleSortDirecto(copia);
+            c = ori;
+            auto ini = high_resolution_clock::now();
+            directo(c);
             auto fin = high_resolution_clock::now();
-            t_directo += duration_cast<milliseconds>(fin - inicio).count();
+            td += duration_cast<milliseconds>(fin - ini).count();
 
-            // Función
-            copia = original;
-            inicio = high_resolution_clock::now();
-            bubbleSortFuncion(copia, ascendente);
+            c = ori;
+            ini = high_resolution_clock::now();
+            funcion(c, asc);
             fin = high_resolution_clock::now();
-            t_funcion += duration_cast<milliseconds>(fin - inicio).count();
+            tf += duration_cast<milliseconds>(fin - ini).count();
 
-            // Functor
-            copia = original;
-            inicio = high_resolution_clock::now();
-            functor(copia);
+            c = ori;
+            ini = high_resolution_clock::now();
+            f(c);
             fin = high_resolution_clock::now();
-            t_functor += duration_cast<milliseconds>(fin - inicio).count();
+            tfu += duration_cast<milliseconds>(fin - ini).count();
 
-            // Polimorfismo
-            copia = original;
-            inicio = high_resolution_clock::now();
-            polimorfico.ordenar(copia);
+            c = ori;
+            ini = high_resolution_clock::now();
+            O* o = new Polimorfismo();
+            o->ord(c);
+            delete o;
             fin = high_resolution_clock::now();
-            t_polimorfico += duration_cast<milliseconds>(fin - inicio).count();
+            tp += duration_cast<milliseconds>(fin - ini).count();
         }
 
-        cout << tam << "\t"
-            << t_directo / pruebas << "\t"
-            << t_funcion / pruebas << "\t"
-            << t_functor / pruebas << "\t"
-            << t_polimorfico / pruebas << "\n";
+        cout << t << "\t" << td / rep << "\t" << tf / rep << "\t" << tfu / rep << "\t" << tp / rep << "\n";
     }
 }
 
 int main() {
-    imprimirResultados();
+    test();
     return 0;
 }
+

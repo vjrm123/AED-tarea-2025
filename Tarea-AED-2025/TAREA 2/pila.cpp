@@ -43,9 +43,8 @@ Pila<T>::~Pila() {
 int main() {
 	Pila<int>p;
 	int Value;
-	p.Push(1); p.Push(2); p.Push(3); p.Push(4);
-	p.Push(5); p.Push(6); p.Push(7); 
-	p.Push(8); p.Push(9); p.Push(10);
+	p.Push(1); p.Push(2); p.Push(3); p.Push(4); p.Push(5); 
+	p.Push(6); p.Push(7); p.Push(8); p.Push(9); p.Push(10);
 	p.Print();
 
 	p.Push(11);
