@@ -91,18 +91,20 @@ void Deque<T>::Push_front(T value){
 }
 
 template<class T>
-void Deque<T>::Pop_back(){
-    if(!Tail){ std::cout<<"esta Vacio!!\n"; }
-    if(Tail == Head){
+void Deque<T>::Pop_back() {
+    if(!Tail) std::cout<<"deque vacio!!\n";
+    
+    if(Tail == Head) {
         delete[] *Tail_block;
         *Tail_block = nullptr;
         Head = Tail = nullptr;
         Head_block = Tail_block = Map + (Map_capacity/2);
     }
-    else if(Tail == *Tail_block){
+    else if(Tail == *Tail_block) {
         delete[] *Tail_block;
+        *Tail_block = nullptr;
         Tail_block--;
-        Tail = *Tail_block + Size_block-1;
+        Tail = *Tail_block + Size_block - 1;
     }
     else {
         Tail--;
@@ -110,19 +112,22 @@ void Deque<T>::Pop_back(){
 }
 
 template<class T>
-void Deque<T>::Pop_front(){
-    if(!Head) std::cout<<"esta vacio!!\n";
-    if(Head == Tail){
-        delete *Head_block;
+void Deque<T>::Pop_front() {
+    if(!Head) std::cout<<"deque vacio!!\n";
+    
+    if(Head == Tail) {
+        delete[] *Head_block;
         *Head_block = nullptr;
         Head = Tail = nullptr;
-        Head_block = Map + (Map_capacity/2);
-    }else if(Head == *Head_block+ Size_block-1){
-        delete *Head_block;
-        Head_block--;
-        Head = *Head_block + Size_block-1;
+        Head_block = Tail_block = Map + (Map_capacity/2);
     }
-    else{
+    else if(Head == *Head_block + Size_block - 1) {
+        delete[] *Head_block;
+        *Head_block = nullptr;
+        Head_block++;
+        Head = *Head_block;
+    }
+    else {
         Head++;
     }
 }
@@ -159,11 +164,12 @@ void Deque<T>::Print(){
 
 int main(){
     Deque<int> d;
-    d.Push_back(5); d.Push_back(6); d.Push_back(7); d.Push_back(8); d.Push_back(9); d.Push_back(10);
-    d.Push_front(4); d.Push_front(3); d.Push_front(2); d.Push_front(1); d.Push_front(0);
+    d.Push_back(5); d.Push_back(6); d.Push_back(7); d.Push_back(6); d.Push_back(7); d.Push_back(1); d.Push_back(2); 
+    d.Push_front(0); d.Push_front(4); d.Push_front(3);
+    
     d.Pop_back();
     d.Pop_front();
-    d[8] = 100;
+
     d.Print();
     return 0;
 }
