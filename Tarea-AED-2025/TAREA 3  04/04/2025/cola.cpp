@@ -3,14 +3,15 @@
 template<class T>
 struct Node {
     T elements[5];
-    int ini = 0, fin = 0;
-    Node* Next = NULL; 
+    T* inicio = elements;    
+    T* fin = elements;       
+    Node* Next = nullptr;    
 };
 
 template<class T>
 struct Cola {
-    Node<T>* Head = NULL;
-    Node<T>* Tail = NULL;
+    Node<T>* Head = nullptr;
+    Node<T>* Tail = nullptr;
 
     void Push(T Value);
     void Pop(T& value);
@@ -22,20 +23,27 @@ struct Cola {
 
 template<class T>
 void Cola<T>::Push(T value) {
-    if (!Tail) Tail = Head = new Node<T>;
-    if (Tail->fin == 5) { Tail = Tail->Next = new Node<T>; }
-    Tail->elements[Tail->fin++] = value;
+    if (!Tail) {
+        Tail = Head = new Node<T>;
+    }
+    if (Tail->fin == Tail->elements + 5) {  
+        Tail = Tail->Next = new Node<T>;
+    }
+    *(Tail->fin++) = value;  
 }
 
 template<class T>
 void Cola<T>::Pop(T& value) {
-    if (!Head || Head->ini >= Head->fin) { std::cout << "Esta vacia!!\n"; return; }
-    value = Head->elements[Head->ini++];
-    if (Head->ini == Head->fin) {
+    if (!Head || Head->inicio >= Head->fin) {
+        std::cout << "Esta vacia!!\n";
+        return;
+    }
+    value = *(Head->inicio++);  
+    if (Head->inicio == Head->fin) {  
         Node<T>* Temp = Head;
         Head = Head->Next;
         delete Temp;
-        if (!Head) Tail = NULL;
+        if (!Head) Tail = nullptr;
     }
 }
 
@@ -44,8 +52,10 @@ void Cola<T>::Print() {
     std::cout << "[ ";
     for (Node<T>* n = Head; n; n = n->Next) {
         std::cout << (n == Head ? "[" : "-> [");
-        for (int i = n->ini, c = 0; i < n->fin; ++i) {
-            std::cout << (c++ ? " " : "") << n->elements[i];
+        bool first = true;
+        for (T* p = n->inicio; p < n->fin; ++p) {
+            std::cout << (first ? "" : " ") << *p;
+            first = false;
         }
         std::cout << "]";
     }
@@ -55,11 +65,11 @@ void Cola<T>::Print() {
 template<class T>
 void Cola<T>::Print1() {
     std::cout << "[";
-    bool first = true; 
+    bool first = true;
     for (Node<T>* n = Head; n; n = n->Next) {
-        for (int i = n->ini; i < n->fin; ++i) {
+        for (T* p = n->inicio; p < n->fin; ++p) {
             if (!first) std::cout << " ";
-            std::cout << n->elements[i];
+            std::cout << *p;
             first = false;
         }
     }
@@ -69,21 +79,29 @@ void Cola<T>::Print1() {
 template<class T>
 Cola<T>::~Cola() {
     T valor;
-    while (Head) { 
+    while (Head) {
         Pop(valor);
     }
 }
 
 int main() {
     Cola<int> c; int Value;
+    c.Print();
+
     c.Push(1); c.Push(2); c.Push(3); c.Push(4); c.Push(5);
     c.Push(6); c.Push(7); c.Push(8); c.Push(9); c.Push(10); c.Push(11);
 
-    c.Print(); 
+    c.Print();
 
     c.Pop(Value); c.Pop(Value); c.Pop(Value); c.Pop(Value); c.Pop(Value);
 
-    c.Print(); 
+    c.Print();
+
+    c.Pop(Value); c.Pop(Value); c.Pop(Value); 
+    c.Pop(Value); c.Pop(Value); c.Pop(Value); c.Pop(Value);
+
+    c.Print();
+
+
     return 0;
 }
-
