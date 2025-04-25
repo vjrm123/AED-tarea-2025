@@ -27,7 +27,7 @@ void Pila<T>::Pop(T& valor) {
 template<class T>
 void Pila<T>::Print() {
     std::cout << "[ ";
-    for (T* p = elements; p <= top; ++p) { std::cout << *p << " "; }
+    for (T* p = top; p >= elements; --p) { std::cout << *p << " "; }
     std::cout << "]\n";
 }
 

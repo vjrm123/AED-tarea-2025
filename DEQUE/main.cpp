@@ -1,9 +1,11 @@
+
+
 #include <iostream>
 
 template<class T>
 class Deque{
     private:
-        int Map_capacity = 7;
+        int Map_capacity = 5;
         int Size_block = 5;
 
         T** Map = nullptr;
@@ -39,20 +41,26 @@ Deque<T>::~Deque(){
 }
 
 template<class T>
-void Deque<T>::expand_map(){
-    int NewCapacity = Map_capacity * 2-1;
-    T** NewMap = new T*[NewCapacity]();
-    int Offset = (NewCapacity - Map_capacity)/2;
+void Deque<T>::expand_map() {
+    int Bloques_usados = Tail_block - Head_block + 1;
+    int NewCapacity = Map_capacity * 2 - 1;
+    T** NewMap = new T * [NewCapacity]();
 
-    for(int i = 0; i < Map_capacity; ++i) { NewMap[Offset+i] = Map[i]; }
+    int NewCenter = NewCapacity / 2;
+    int Offset = NewCenter - (Bloques_usados / 2);
 
-    Head_block = NewMap + (Head_block - Map) + Offset;
-    Tail_block = NewMap + (Tail_block - Map) + Offset;
+    for (int i = 0; i < Bloques_usados; ++i) {
+        NewMap[Offset + i] = Head_block[i];
+    }
+
+    Head_block = NewMap + Offset;
+    Tail_block = Head_block + (Bloques_usados - 1);
 
     delete[] Map;
     Map = NewMap;
     Map_capacity = NewCapacity;
 }
+
 
 template<class T>
 void Deque<T>::Push_back(T value){
