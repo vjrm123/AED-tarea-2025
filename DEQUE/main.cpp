@@ -162,7 +162,7 @@ void Deque<T>::Print(){
         if(Current_block == Tail_block && Current == Tail) break;
         if(Current == *Current_block + Size_block-1){
             Current_block++;
-            Current = *Current_block;
+            Current = *Current_block; 
         }else{
             Current++;
         }
@@ -172,11 +172,11 @@ void Deque<T>::Print(){
 
 int main(){
     Deque<int> d;
-    d.Push_back(5); d.Push_back(6); d.Push_back(7); d.Push_back(6); d.Push_back(7); d.Push_back(1); d.Push_back(2); 
-    d.Push_front(0); d.Push_front(4); d.Push_front(3);
+    d.Push_back(5); d.Push_back(6); d.Push_back(7); d.Push_back(6); 
+    d.Push_front(0); d.Push_front(4); d.Push_front(3); d.Push_front(7);
     
-    d.Pop_back();
-    d.Pop_front();
+    d.Pop_back(); 
+
 
     d.Print();
     return 0;
