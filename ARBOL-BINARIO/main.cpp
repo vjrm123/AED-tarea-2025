@@ -6,11 +6,11 @@ using namespace std;
 
 struct node {
     int valor;
-    node* nod[2];  
+    node* nod[2];
 
     node(int valor) {
         this->valor = valor;
-        nod[0] = nod[1] = nullptr;  
+        nod[0] = nod[1] = nullptr;
     }
 };
 
@@ -21,77 +21,67 @@ public:
     bool find(int valor, node**& p);
     bool add(int valor);
     bool del(int valor);
-    void clear(node* p);  
+    void clear(node* p);
 
-    // Recorridos
+    
     void inorder(node* p);
     void preorder(node* p);
     void postorder(node* p);
     void inverse_inorder(node* p);
     void level_order();
-    
-    // Funciones de acceso para los recorridos
+    void reverse_level_order();
+  
     node* getRoot() { return root; }
 
 private:
-    node** Rep(node** p); 
-    node* root;  
+    node** Rep(node** p);
+    node* root;
 };
 
-// Implementaciones existentes (constructor, destructor, clear, find, add, del, Rep)
-cbintree::cbintree() : root(nullptr) {}
+cbintree::cbintree() : root(nullptr){}
 
-cbintree::~cbintree() {
-    clear(root);
-}
+cbintree::~cbintree() { clear(root); }
 
 void cbintree::clear(node* p) {
-    if (!p) return;
+    if (!p)return;
     clear(p->nod[0]);
     clear(p->nod[1]);
     delete p;
 }
 
-bool cbintree::find(int valor, node**& p) {
+bool cbintree::find(int value, node**& p) {
     p = &root;
-    while (*p && (*p)->valor != valor) {
-        p = &((*p)->nod[(*p)->valor < valor]);
-    }
-    return *p != nullptr;
+    while (*p && (*p)->valor != value) { p = &((*p)->nod[(*p)->valor < value]); }
+    return (*p) != 0;
 }
 
-bool cbintree::add(int valor) {
-    node** P;
-    if (find(valor, P)) return false;  
-    *P = new node(valor);
+bool cbintree::add(int value) {
+    node** p;
+    if (find(value, p))return false;
+    *p = new node(value);
     return true;
 }
 
 node** cbintree::Rep(node** p) {
-    node** q = &((*p)->nod[1]);  
-    while ((*q)->nod[0]) {  
-        q = &((*q)->nod[0]);
-    }
+    node** q = &((*p)->nod[1]);
+    while ((*q)->nod[0]) { q = &((*q)->nod[0]); }
     return q;
 }
 
-bool cbintree::del(int valor) {
-    node** P;
-    if (!find(valor, P)) return false;  
-    if ((*P)->nod[0] && (*P)->nod[1]) {  
-        node** q = Rep(P);  
-        (*P)->valor = (*q)->valor;  
-        P = q;  
+bool cbintree::del(int value) {
+    node** p;
+    if (!find(value, p)) return false;
+    if ((*p)->nod[1] && (*p)->nod[0]) {
+        node** q = Rep(p);
+        (*p)->valor = (*q)->valor;
+        p = q;
     }
-    node* t = *P;
-    *P = (*P)->nod[(*P)->nod[1] != nullptr];  
-    delete t; 
+    node* t = *p;
+    *p = (*p)->nod[(*p)->nod[1] != 0];
+    delete t;
     return true;
 }
 
-// Implementaciones de los recorridos
-
-// Recorrido Inorder (izquierda, raíz, derecha)
 void cbintree::inorder(node* p) {
     if (!p) return;
     inorder(p->nod[0]);
@@ -99,7 +89,6 @@ void cbintree::inorder(node* p) {
     inorder(p->nod[1]);
 }
 
-// Recorrido Preorder (raíz, izquierda, derecha)
 void cbintree::preorder(node* p) {
     if (!p) return;
     cout << p->valor << " ";
@@ -107,7 +96,6 @@ void cbintree::preorder(node* p) {
     preorder(p->nod[1]);
 }
 
-// Recorrido Postorder (izquierda, derecha, raíz)
 void cbintree::postorder(node* p) {
     if (!p) return;
     postorder(p->nod[0]);
@@ -115,7 +103,6 @@ void cbintree::postorder(node* p) {
     cout << p->valor << " ";
 }
 
-// Recorrido Inorder inverso (derecha, raíz, izquierda)
 void cbintree::inverse_inorder(node* p) {
     if (!p) return;
     inverse_inorder(p->nod[1]);
@@ -123,54 +110,55 @@ void cbintree::inverse_inorder(node* p) {
     inverse_inorder(p->nod[0]);
 }
 
-// Recorrido por niveles (usando BFS con cola)
 void cbintree::level_order() {
     if (!root) return;
-    
-    queue<node*> q;
+    queue<node*>q;
     q.push(root);
-    
     while (!q.empty()) {
         node* current = q.front();
         q.pop();
         cout << current->valor << " ";
-        
         if (current->nod[0]) q.push(current->nod[0]);
         if (current->nod[1]) q.push(current->nod[1]);
     }
 }
 
-
+void cbintree::reverse_level_order() {
+    if (!root)return;
+    queue<node*>q;
+    stack<node*>p;
+    q.push(root);
+    while (!q.empty()) {
+        node* current = q.front();
+        q.pop();
+        p.push(current);
+        if (current->nod[1]) q.push(current->nod[1]);
+        if (current->nod[0]) q.push(current->nod[0]);
+    }
+    while (!p.empty()) {
+        cout << p.top()->valor << " ";
+        p.pop();
+    }
+}
 
 int main() {
-    cbintree tree;
-    tree.add(10);
-    tree.add(5);
-    tree.add(15);
-    tree.add(12);
-    tree.add(7);
-    tree.add(3);
-    tree.add(17);
+    cbintree c;
+    c.add(6); c.add(4); c.add(9); c.add(2); c.add(7); c.add(8);
+    c.add(1); c.add(6);
+    cout << "inorder: ";
+    c.inorder(c.getRoot());
+    cout << "\n pre order: ";
+    c.preorder(c.getRoot());
+    cout << "\n post order: ";
+    c.postorder(c.getRoot());
 
-    cout << "Inorder: ";
-    tree.inorder(tree.getRoot());
-    cout << endl;
+    cout << "\n inversa in order: ";
+    c.inverse_inorder(c.getRoot());
+    cout << "\n por niveles: ";
+    c.level_order();
+    cout << "\npor niveles inverso: ";
+    c.reverse_level_order();
 
-    cout << "Preorder: ";
-    tree.preorder(tree.getRoot());
-    cout << endl;
-
-    cout << "Postorder: ";
-    tree.postorder(tree.getRoot());
-    cout << endl;
-
-    cout << "Inverse Inorder: ";
-    tree.inverse_inorder(tree.getRoot());
-    cout << endl;
-
-    cout << "Level Order: ";
-    tree.level_order();
-    cout << endl;
 
     return 0;
 }
