@@ -11,7 +11,7 @@ def main():
     empleados = [
         {"id": 1, "nombre": "Juan", "edad": 30, "departamento": "IT", "salario": 45000},
         {"id": 2, "nombre": "Ana", "edad": 25, "departamento": "Ventas", "salario": 38000},
-        {"id": 3, "nombre": "Luis", "edad": 30, "departamento": "RRHH", "salario": 42000},
+        {"id": 3, "nombre": "Juan", "edad": 30, "departamento": "RRHH", "salario": 42000},
         {"id": 4, "nombre": "Marta", "edad": 35, "departamento": "IT", "salario": 50000},
         {"id": 5, "nombre": "Carlos", "edad": 28, "departamento": "Ventas", "salario": 36000},
         {"id": 6, "nombre": "Sofía", "edad": 32, "departamento": "Marketing", "salario": 48000},
@@ -26,12 +26,12 @@ def main():
         {"id": 15, "nombre": "Ricardo", "edad": 29, "departamento": "Marketing", "salario": 43000},
         {"id": 16, "nombre": "Patricia", "edad": 36, "departamento": "IT", "salario": 58000},
         {"id": 17, "nombre": "Fernando", "edad": 40, "departamento": "Ventas", "salario": 51000},
-        {"id": 18, "nombre": "Lucía", "edad": 24, "departamento": "Marketing", "salario": 40000},
+        {"id": 18, "nombre": "Juan", "edad": 24, "departamento": "Marketing", "salario": 40000},
         {"id": 19, "nombre": "Roberto", "edad": 37, "departamento": "IT", "salario": 60000},
         {"id": 20, "nombre": "Beatriz", "edad": 20, "departamento": "RRHH", "salario": 44000},
         {"id": 21, "nombre": "Alberto", "edad": 31, "departamento": "Ventas", "salario": 46000},
         {"id": 22, "nombre": "Silvia", "edad": 40, "departamento": "Marketing", "salario": 52000},
-        {"id": 23, "nombre": "Raúl", "edad": 39, "departamento": "IT", "salario": 62000},
+        {"id": 23, "nombre": "Juan", "edad": 39, "departamento": "IT", "salario": 62000},
         {"id": 24, "nombre": "Olga", "edad": 27, "departamento": "RRHH", "salario": 43000}
     ]
     db.cargar_datos("empleados", empleados)

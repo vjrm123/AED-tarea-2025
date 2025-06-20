@@ -131,6 +131,19 @@ class DiscoInterfaz(QWidget):
             self.registro_encontrado = registro[self.registro_seleccionado]
             self.mostrar_diagrama()
 
+            # Obtener la primera ubicación del registro seleccionado
+            if self.registro_encontrado and self.registro_encontrado["ubicaciones"]:
+                primer_lba = self.registro_encontrado["ubicaciones"][0][0]
+                plato, superficie, pista, sector = self.disco._lba_a_chs(primer_lba)
+
+                # Actualizar combo boxes para ir a la ubicación real
+                self.plato_combo["combo"].setCurrentIndex(plato)
+                self.superficie_combo["combo"].setCurrentIndex(superficie)
+                self.pista_selector["spin"].setValue(pista)
+
+                self.mostrar_diagrama()
+
+
 
     def create_combo_box(self, label_text, items):
         label = QLabel(label_text)
@@ -174,14 +187,14 @@ class DiscoInterfaz(QWidget):
         pista_fin = min(pista_ini + num_pistas, self.max_pistas_por_sup)
 
         cx, cy = 150, 250
-        spacing_y = 120
+        spacing_y = 40
         sector_size = 25
 
         # === Contador de uso por LBA para detectar compartidos ===
+        # === Contador de uso por LBA para detectar compartidos ===
         uso_lba = {}
         for ubicaciones in self.disco.mapa_ubicacion_fisica.values():
-            for plato_u, sup_u, pista_u, sector_u in ubicaciones:
-                lba_u = self.disco._chs_a_lba(plato_u, sup_u, pista_u, sector_u)
+            for lba_u, inicio, fin in ubicaciones:
                 uso_lba[lba_u] = uso_lba.get(lba_u, 0) + 1
 
         ruta_imagen = os.path.join(os.path.dirname(__file__), "plato_cd.png")
@@ -211,7 +224,7 @@ class DiscoInterfaz(QWidget):
             label_font = QFont()
             label_font.setBold(True)
             pista_label.setFont(label_font)
-            pista_label.setPos(base_x - 30, y - 15)
+            pista_label.setPos(base_x - 30, y - 25)
             self.scene.addItem(pista_label)
 
             if i == 0:
@@ -224,7 +237,7 @@ class DiscoInterfaz(QWidget):
                 self.scene.addItem(flecha)
 
             for sec in range(self.sectores_por_pista):
-                x_sec = base_x + sec * (sector_size + 5)
+                x_sec = base_x + sec * (sector_size + 5)+20
                 sectores_por_plato = self.disco.pistas_por_superficie * self.disco.sectores_por_pista * self.disco.superficies_por_plato
                 lba = (
                     plato * sectores_por_plato +
@@ -234,18 +247,26 @@ class DiscoInterfaz(QWidget):
                 sector_obj = self.disco.sectores[lba]
 
                 # === Color por estado del sector ===
-                color = QColor("#5d8341")  # Verde - libre
-                if sector_obj and sector_obj.ocupado:
-                    color = QColor("#a96e4a")  # Naranja - ocupado
+                if not self.registro_encontrado:
+                    # Si NO hay registro seleccionado
+                    if sector_obj and sector_obj.tamano_ocupado > 0:
+                        color = QColor("#a96e4a")  # Naranja - ocupado
+                    else:
+                        color = QColor("#5d8341")  # Verde - libre
+                else:
+                    # Si hay registro seleccionado (Ver en Disco activado)
+                    ubicaciones = [ubi[0] for ubi in self.registro_encontrado.get("ubicaciones", [])]
+                    if lba in ubicaciones:
+                        if uso_lba.get(lba, 0) > 1:
+                            color = QColor("#c0392b")  # Rojo - compartido
+                        else:
+                            color = QColor("#4a6ea9")  # Azul - exclusivo del registro
+                    else:
+                        if sector_obj and sector_obj.tamano_ocupado > 0:
+                            color = QColor("#a96e4a")  # Naranja - ocupado (ajeno)
+                        else:
+                            color = QColor("#5d8341")  # Verde - libre
 
-                if self.registro_encontrado:
-                    for (ubi_lba, _, _) in self.registro_encontrado.get("ubicaciones", []):
-                        if ubi_lba == lba:
-                            color = QColor("#4a6ea9")  # Azul - seleccionado
-                            break
-
-                if uso_lba.get(lba, 0) > 1:
-                    color = QColor("#9b59b6")  # Púrpura - compartido por varios registros
 
                 rect = QGraphicsRectItem(x_sec, y, sector_size, sector_size)
                 gradient = QLinearGradient(x_sec, y, x_sec, y + sector_size)

@@ -1,7 +1,7 @@
 class NodoAVL:
     def __init__(self, clave, valores):
         self.clave = clave
-        self.valores = valores  # lista de (id_registro, [LBAs])
+        self.valores = valores  
         self.izquierda = None
         self.derecha = None
         self.altura = 1
