@@ -18,7 +18,7 @@ class DiscoInterfaz(QWidget):
         super().__init__()
         self.disco = disco
         self.db = db
-        self.setWindowTitle("Visualizador Avanzado de Disco")
+        self.setWindowTitle("Disco")
         self.setWindowIcon(QIcon(os.path.join(os.path.dirname(__file__), "plato_cd.png")))
         self.setStyleSheet("""
             QWidget { background-color: #2b2b2b; color: #e0e0e0; }
@@ -43,7 +43,7 @@ class DiscoInterfaz(QWidget):
         self.setLayout(self.main_layout)
 
         # === Grupo de control de visualización del disco ===
-        self.control_group = QGroupBox("Configuración de Visualización")
+        self.control_group = QGroupBox("")
         control_layout = QHBoxLayout()
         self.plato_combo = self.create_combo_box("Plato:", [f"Plato {i}" for i in range(self.num_platos)])
         self.superficie_combo = self.create_combo_box("Superficie:", [f"Superficie {i}" for i in range(self.superficies_por_plato)])
@@ -111,7 +111,7 @@ class DiscoInterfaz(QWidget):
         if not val:
             QMessageBox.warning(self, "Valor requerido", "Ingrese un valor para filtrar.")
             return
-        resultados = self.db.select("empleados", [(col, '=', val)])
+        resultados = self.db.buscar_por_campo("empleados", col, val)
         self.mostrar_resultados(resultados)
         self.mostrar_diagrama()
 
@@ -176,7 +176,7 @@ class DiscoInterfaz(QWidget):
                 celda = QTableWidgetItem(valor)
                 self.tabla_resultados.setItem(fila, col, celda)
             self.tabla_resultados.item(fila, 0).setData(Qt.ItemDataRole.UserRole, item["id"])
-    # ... mantiene los métodos mostrar_diagrama, buscar_registro, add_legend, get_sector_tooltip tal como están ...
+
     def mostrar_diagrama(self):
         self.scene.clear()
 
@@ -190,8 +190,6 @@ class DiscoInterfaz(QWidget):
         spacing_y = 40
         sector_size = 25
 
-        # === Contador de uso por LBA para detectar compartidos ===
-        # === Contador de uso por LBA para detectar compartidos ===
         uso_lba = {}
         for ubicaciones in self.disco.mapa_ubicacion_fisica.values():
             for lba_u, inicio, fin in ubicaciones:

@@ -34,57 +34,29 @@ class BaseDeDatosFiltrado:
 
             tabla['registros'][id_registro] = registro
 
-    def select(self, nombre_tabla, condiciones=None):
+    def buscar_por_campo(self, nombre_tabla, columna, valor):
         if nombre_tabla not in self.tablas:
             return []
 
         tabla = self.tablas[nombre_tabla]
-        registros = tabla['registros']
+        tipo = tabla['tipos'].get(columna, str)
 
-        if not condiciones:
-            return [
-                {
-                    'registro': reg,
-                    'id': id_reg,
-                    'ubicacion_disco': self.disco.obtener_ubicacion(id_reg)
-                }
-                for id_reg, reg in registros.items()
-            ]
+        try:
+            valor = tipo(valor)
+        except:
+            return []
 
-        ids_validos = set()
+        # 👇 Si no existe el índice, lo construye dinámicamente
+        if columna not in tabla['indices'] or tabla['indices'][columna] is None:
+            from Avl import AVLIndex
+            avl = AVLIndex()
+            for id_registro, registro in tabla['registros'].items():
+                ubicacion = self.disco.obtener_ubicacion(id_registro)
+                avl.insertar(registro[columna], id_registro, ubicacion)
+            tabla['indices'][columna] = avl
 
-        for i, (col, op, val) in enumerate(condiciones):
-            if col not in tabla['indices']:
-                continue
-
-            tipo_esperado = tabla['tipos'].get(col)
-            if tipo_esperado:
-                try:
-                    if tipo_esperado == bool:
-                        val = str(val).strip().lower()
-                        if val in ("true", "1"):
-                            val = True
-                        elif val in ("false", "0"):
-                            val = False
-                        else:
-                            raise ValueError()
-                    else:
-                        val = tipo_esperado(val)
-                except:
-                    messagebox.showerror("Error", f"Tipo inválido para '{col}'")
-                    return []
-
-            if op != '=':
-                messagebox.showerror("Error", "Solo se permite '=' por ahora")
-                return []
-
-            coincidencias = tabla['indices'][col].buscar(val)
-            ids_actuales = {id_reg for id_reg, _ in coincidencias}
-
-            if i == 0:
-                ids_validos = ids_actuales
-            else:
-                ids_validos &= ids_actuales
+        avl = tabla['indices'][columna]
+        coincidencias = avl.buscar(valor)
 
         return [
             {
@@ -92,5 +64,6 @@ class BaseDeDatosFiltrado:
                 'id': id_reg,
                 'ubicacion_disco': self.disco.obtener_ubicacion(id_reg)
             }
-            for id_reg in ids_validos
+            for id_reg, _ in coincidencias
         ]
+
