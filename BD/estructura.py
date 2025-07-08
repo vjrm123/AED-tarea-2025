@@ -7,22 +7,40 @@ def leer_sql(nombre_archivo):
 
 def parse_create_table(sql):
     estructura = []
+    nombre_tabla = None
+
     for linea in sql.splitlines():
-        linea = linea.strip().strip(',').strip(';').lower()
-        if not linea or 'create table' in linea or linea.startswith("(") or linea.startswith(")"):
+        linea = linea.strip().strip(',').strip(';')
+
+        if not linea:
             continue
-        linea = linea.split('not null')[0].split('primary key')[0].strip()
+
+        if 'create table' in linea.lower():
+            match = re.search(r'create table\s+([a-zA-Z_][a-zA-Z0-9_]*)', linea, re.IGNORECASE)
+            if match:
+                nombre_tabla = match.group(1).lower()
+            continue
+
+        if linea.startswith("(") or linea.startswith(")"):
+            continue
+
+        linea = linea.split('not null')[0].split('primary key')[0].strip().lower()
+
         match = re.match(r'^([a-z_][a-z0-9_]*)\s+([a-z]+)(?:\(([^)]+)\))?', linea)
         if not match:
             continue
+
         nombre, tipo, params = match.groups()
+
         if tipo == "varchar" and params:
             estructura.append((nombre, f"{int(params)}s"))
         elif tipo in ("int", "integer"):
             estructura.append((nombre, "i"))
         elif tipo == "decimal":
             estructura.append((nombre, "d"))
-    return estructura
+
+    return nombre_tabla, estructura  
+
 
 def empaquetar(estructura, datos):
     formato = '=' + ''.join(tipo for _, tipo in estructura)

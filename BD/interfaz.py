@@ -52,9 +52,13 @@ class DiscoInterfaz(QWidget):
         self.boton_mostrar.clicked.connect(self.mostrar_diagrama)
 
         columnas = self.db.tablas[self.nombre_tabla_actual]['columnas']
+        self.columnas = columnas  
+        self.columnas_filtrables = columnas[1:]  
+
         self.filtro_columna = QComboBox()
-        self.filtro_columna.addItem("")
-        self.filtro_columna.addItems(columnas)
+        self.filtro_columna.addItem("")  
+        self.filtro_columna.addItems(self.columnas_filtrables)
+
 
         self.filtro_valor = QLineEdit()
         self.filtro_valor.setPlaceholderText("Valor a buscar")
@@ -93,10 +97,9 @@ class DiscoInterfaz(QWidget):
         self.scene = QGraphicsScene()
         self.view = QGraphicsView(self.scene)
         self.view.setRenderHint(QPainter.RenderHint.Antialiasing)
-        self.view.setMinimumHeight(600)
-        self.view.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
-        self.view.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self.view.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.view.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        self.view.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        self.view.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         self.content_layout.addWidget(self.view)
 
         self.resultado_frame = QFrame()
@@ -217,6 +220,7 @@ class DiscoInterfaz(QWidget):
         base_x = cx + (pixmap.width() if not pixmap.isNull() else 200) / 2 + 50
         base_y = cy - (num_pistas * spacing_y) / 2
 
+
         for i, p in enumerate(range(pista_ini, pista_fin)):
             y = base_y + i * spacing_y
 
@@ -248,13 +252,13 @@ class DiscoInterfaz(QWidget):
                 sector_obj = self.disco.sectores[lba]
 
                 if not self.registro_encontrado:
-                    color = QColor("#a96e4a") if sector_obj and sector_obj.tamano_ocupado > 0 else QColor("#5d8341")
+                    color = QColor("#ee8543") if sector_obj and sector_obj.tamano_ocupado > 0 else QColor("#80bb55")
                 else:
                     ubicaciones = [ubi[0] for ubi in self.registro_encontrado.get("ubicaciones", [])]
                     if lba in ubicaciones:
-                        color = QColor("#c0392b") if uso_lba.get(lba, 0) > 1 else QColor("#4a6ea9")
+                        color = QColor("#e6402d") if uso_lba.get(lba, 0) > 1 else QColor("#4185f3")
                     else:
-                        color = QColor("#a96e4a") if sector_obj and sector_obj.tamano_ocupado > 0 else QColor("#5d8341")
+                        color = QColor("#ee8543") if sector_obj and sector_obj.tamano_ocupado > 0 else QColor("#8cd855")
 
                 rect = QGraphicsRectItem(x_sec, y, sector_size, sector_size)
                 gradient = QLinearGradient(x_sec, y, x_sec, y + sector_size)
@@ -276,49 +280,87 @@ class DiscoInterfaz(QWidget):
                     sector_num.setPos(x_sec + sector_size / 2 - 5, y + sector_size / 2 - 8)
                     self.scene.addItem(sector_num)
 
-        self.scene.setSceneRect(0, 0, base_x + 600, base_y + num_pistas * spacing_y + 100)
+        alto_total = num_pistas * spacing_y
+        ancho_total = base_x + (self.disco.sectores_por_pista * (sector_size + 5)) + 100
+        self.scene.setSceneRect(0, min(0, base_y) - 50, ancho_total, alto_total + 100)
+
+
 
 
     def aplicar_filtro(self):
         columna = self.filtro_columna.currentText()
         valor = self.filtro_valor.text().strip()
+
+        if columna.lower() == self.db.tablas[self.nombre_tabla_actual]['columnas'][0].lower():
+            QMessageBox.warning(self, "No permitido", "No se puede buscar por la columna ID.")
+            return
+
         registros = self.db.buscar_por_campo(self.nombre_tabla_actual, columna, valor)
 
         if registros:
-            self.tabla_resultados.setRowCount(0)
-            self.tabla_resultados.setColumnCount(len(self.db.tablas[self.nombre_tabla_actual]['columnas']))
-            self.tabla_resultados.setHorizontalHeaderLabels(self.db.tablas[self.nombre_tabla_actual]['columnas'])
-            
-            for item in registros:
-                reg = item['registro']
-                fila = self.tabla_resultados.rowCount()
-                self.tabla_resultados.insertRow(fila)
-                for col, val in enumerate(reg.values()):
-                    self.tabla_resultados.setItem(fila, col, QTableWidgetItem(str(val)))
+            dialogo = QWidget(self, flags=Qt.WindowType.Dialog)
+            dialogo.setWindowTitle("Resultados de búsqueda")
+            dialogo.resize(800, 500)
 
-            self.tabla_resultados.resizeColumnsToContents()
+            layout = QVBoxLayout(dialogo)
+            tabla = QTableWidget()
+            columnas = self.db.tablas[self.nombre_tabla_actual]['columnas']
 
-            self.resultado_frame.setVisible(True)
-            self.tabla_resultados.setVisible(True)
-            self.minimizar_btn.setText("–")  
+            tabla.setColumnCount(len(columnas))
+            tabla.setHorizontalHeaderLabels(columnas)
+            tabla.setRowCount(len(registros))
 
+            for i, item in enumerate(registros):
+                fila = item["registro"]
+                for j, valor in enumerate(fila.values()):
+                    tabla.setItem(i, j, QTableWidgetItem(str(valor)))
+
+            tabla.resizeColumnsToContents()
+            layout.addWidget(tabla)
+
+            boton_ver = QPushButton("Ver en disco")
+            boton_ver.setEnabled(False)
+            layout.addWidget(boton_ver)
+
+            def cuando_selecciona():
+                boton_ver.setEnabled(True)
+
+            tabla.itemSelectionChanged.connect(cuando_selecciona)
+
+            def ver_en_disco():
+                fila = tabla.currentRow()
+                if fila >= 0:
+                    registro = registros[fila]
+                    ubicaciones = registro["ubicacion"]
+                    primer_lba = ubicaciones[0][0]
+
+                    plato, superficie, pista, _ = self.disco._lba_a_chs(primer_lba)
+
+                    self.plato_combo.setCurrentIndex(plato)
+                    self.superficie_combo.setCurrentIndex(superficie)
+                    self.pista_inicial.setValue(pista)
+
+                    self.registro_encontrado = {
+                        "registro": registro["registro"],
+                        "ubicaciones": ubicaciones
+                    }
+
+                    self.mostrar_diagrama()
+                    dialogo.close()
+
+
+            boton_ver.clicked.connect(ver_en_disco)
+            dialogo.setLayout(layout)
+            dialogo.show()
+            dialogo.activateWindow()
+            dialogo.raise_()
+            dialogo.exec = lambda: None 
         else:
             QMessageBox.information(self, "Sin resultados", "No se encontraron coincidencias.")
-            self.resultado_frame.setVisible(False)
+
 
     def get_sector_tooltip(self, plato, superficie, pista, sector, sector_obj):
-        spp = self.disco.sectores_por_pista
-        pps = self.disco.pistas_por_superficie
-        spf = self.disco.superficies_por_plato
-
-        sectores_por_plato = spf * pps * spp
-        sectores_por_superficie = pps * spp
-
-        lba = (
-            plato * sectores_por_plato +
-            superficie * sectores_por_superficie +
-            pista * spp + sector
-        )
+        lba = self.disco._chs_a_lba(plato, superficie, pista, sector)
 
         registros_en_sector = []
         for id_reg, ubicaciones in self.disco.mapa_ubicacion_fisica.items():
@@ -326,17 +368,25 @@ class DiscoInterfaz(QWidget):
                 if lba == lba_u:
                     registros_en_sector.append(id_reg)
 
-        tooltip = f"<b>CHS:</b> ({plato}, {superficie}, {pista}, {sector})<br>"
-        tooltip += f"<b>LBA:</b> {lba}<br>"
+        tooltip = (
+            f"<b>Plato:</b> {plato}<br>"
+            f"<b>Superficie:</b> {superficie}<br>"
+            f"<b>Pista:</b> {pista}<br>"
+            f"<b>Sector:</b> {sector}<br>"
+            f"<b>LBA:</b> {lba}<br>"
+        )
 
         if sector_obj is not None and sector_obj.tamano_ocupado > 0:
             tooltip += f"<b>Ocupado:</b> {sector_obj.tamano_ocupado} bytes<br>"
             if registros_en_sector:
-                tooltip += "<b>Registros en este sector:</b><br>" + "<br>".join(registros_en_sector)
+                tooltip += "<b>Registros:</b><br>" + "<br>".join(registros_en_sector)
             else:
                 tooltip += "<b>Registro no identificado</b>"
         else:
             tooltip += "<b>Sector vacío</b>"
+
+        return tooltip
+
 
         return tooltip
     def ocultar_tabla(self):
@@ -349,4 +399,5 @@ class DiscoInterfaz(QWidget):
         else:
             self.tabla_resultados.setVisible(True)
             self.minimizar_btn.setText("–")
+    
 

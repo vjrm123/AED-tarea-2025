@@ -1,6 +1,6 @@
 from sector import Sector
 class DISCO:
-    def __init__(self, platos=2, pistas=10, sectores_por_pista=20, tamano_sector=16):
+    def __init__(self, platos=2, pistas=20, sectores_por_pista=20, tamano_sector=64):
         self.platos = platos
         self.pistas_por_superficie = pistas
         self.sectores_por_pista = sectores_por_pista
@@ -36,6 +36,7 @@ class DISCO:
         return (plato, superficie, pista, sector)
 
     def guardar_dato(self, registro_bytes, id_registro):
+        
         offset = 0
         total = len(registro_bytes)
         ubicaciones = []

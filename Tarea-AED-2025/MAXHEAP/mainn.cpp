@@ -62,7 +62,7 @@ void CMaxHeap3<T>::heapfyDown(int i) {
         int hijo2 = 3 * i + 2;
         int hijo3 = 3 * i + 3;
         int mayor = i;
-        if (hijo1 < n && heap[hijo1] > heap[mayor]) mayor = hijo1;
+        if (hijo1 < git pushn && heap[hijo1] > heap[mayor]) mayor = hijo1;
         if (hijo2 < n && heap[hijo2] > heap[mayor]) mayor = hijo2;
         if (hijo3 < n && heap[hijo3] > heap[mayor]) mayor = hijo3;
 

@@ -22,7 +22,7 @@ class BaseDeDatos:
             'estructura': estructura,
             'columnas': columnas,
             'tipos': tipos,
-            'indices': {col: AVLIndex() for col in columnas},
+            'indices': {col: AVLIndex() for col in columnas if col.lower() != "Index"},
             'registros': {}  
         }
 
